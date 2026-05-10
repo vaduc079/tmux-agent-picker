@@ -1,0 +1,43 @@
+{
+  "version": "0.27.0",
+  "environments": [
+    "claude"
+  ],
+  "phases": [
+    "requirements",
+    "design",
+    "planning",
+    "implementation",
+    "testing",
+    "deployment",
+    "monitoring"
+  ],
+  "createdAt": "2026-05-10T09:29:17.976Z",
+  "updatedAt": "2026-05-10T09:29:25.069Z",
+  "skills": [
+    {
+      "registry": "codeaholicguy/ai-devkit",
+      "name": "dev-lifecycle"
+    },
+    {
+      "registry": "codeaholicguy/ai-devkit",
+      "name": "memory"
+    },
+    {
+      "registry": "codeaholicguy/ai-devkit",
+      "name": "simplify-implementation"
+    },
+    {
+      "registry": "codeaholicguy/ai-devkit",
+      "name": "technical-writer"
+    },
+    {
+      "registry": "codeaholicguy/ai-devkit",
+      "name": "verify"
+    },
+    {
+      "registry": "codeaholicguy/ai-devkit",
+      "name": "tdd"
+    }
+  ]
+}
