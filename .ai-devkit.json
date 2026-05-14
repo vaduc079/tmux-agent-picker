@@ -1,8 +1,6 @@
 {
   "version": "0.27.0",
-  "environments": [
-    "claude"
-  ],
+  "environments": ["claude", "codex"],
   "phases": [
     "requirements",
     "design",

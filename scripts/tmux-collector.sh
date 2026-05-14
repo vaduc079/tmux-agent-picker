@@ -6,9 +6,56 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # shellcheck source=lib/cache.sh
 source "$SCRIPT_DIR/lib/cache.sh"
+# shellcheck source=lib/picker-index.sh
+source "$SCRIPT_DIR/lib/picker-index.sh"
+
+LOCK_MODE=try
+LOCK_ATTEMPTS=""
+LOCK_SLEEP_SECONDS=0.05
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --once)
+            shift
+            ;;
+        --lock-briefly)
+            LOCK_MODE=brief
+            shift
+            ;;
+        --wait-lock)
+            LOCK_MODE=wait
+            shift
+            ;;
+        --lock-attempts)
+            LOCK_MODE=custom
+            LOCK_ATTEMPTS="${2:-}"
+            shift 2
+            ;;
+        --lock-sleep)
+            LOCK_SLEEP_SECONDS="${2:-}"
+            shift 2
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
 
 agent_picker_init_cache
-agent_picker_lock cache
+case "$LOCK_MODE" in
+    brief)
+        agent_picker_lock_briefly cache || exit 0
+        ;;
+    wait)
+        agent_picker_lock cache || exit 0
+        ;;
+    custom)
+        agent_picker_lock cache "$LOCK_ATTEMPTS" "$LOCK_SLEEP_SECONDS" || exit 0
+        ;;
+    *)
+        agent_picker_try_lock cache || exit 0
+        ;;
+esac
 trap 'agent_picker_unlock' EXIT
 
 if ! command -v jq >/dev/null 2>&1; then
@@ -163,40 +210,4 @@ jq --slurpfile panes "$TMUX_PANES_JSON" --argjson now "$NOW" '
   | discover_codex_panes($pane_map; $now)
 ' "$AGENTS_JSON" | agent_picker_atomic_write "$AGENTS_JSON"
 
-jq -r '
-  def status_label($status):
-    if $status == "idle" then "🟢 idle"
-    elif $status == "running" then "🔵 running"
-    elif $status == "wait" then "🟡 wait"
-    elif $status == "error" then "🔴 error"
-    else "⚪ " + $status
-    end;
-
-  def compact_cwd($cwd):
-    ($cwd // "") as $path |
-    if $path == "" then
-      ""
-    else
-      ($path | split("/") | map(select(. != ""))) as $parts |
-      if ($parts | length) <= 2 then
-        $path
-      else
-        ".../" + ($parts[-2:] | join("/"))
-      end
-    end;
-
-  to_entries[]
-  | select(.value.stale != true)
-  | .value as $agent
-  | ($agent.status // "idle") as $status
-  | ($agent.cwd // "") as $cwd
-  | [
-      $agent.id,
-      status_label($status),
-      ($agent.agent_type // "agent"),
-      ($agent.display_title // $agent.display_title_hint // $agent.agent_session_id // $agent.id),
-      compact_cwd($cwd),
-      (($agent.tmux.session_name // "?") + ":" + ($agent.tmux.window_index // "?") + "." + ($agent.tmux.pane_index // "?"))
-    ]
-  | @tsv
-' "$AGENTS_JSON" | agent_picker_atomic_write "$PICKER_TSV"
+agent_picker_rebuild_picker_tsv

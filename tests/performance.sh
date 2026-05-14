@@ -73,6 +73,19 @@ validate_picker_scale() {
     assert_eq "$pane_count" "$row_count" "picker should render $pane_count live pane rows"
 }
 
+validate_picker_busy_lock() {
+    rm -rf "$AGENT_PICKER_CACHE_DIR"
+    mkdir -p "$AGENT_PICKER_CACHE_DIR/locks"
+    printf '{}\n' > "$AGENT_PICKER_CACHE_DIR/agents.json"
+    printf '{}\n' > "$AGENT_PICKER_CACHE_DIR/tmux-panes.json"
+    printf 'codex:test\t🟢 idle\tcodex\tTest\t/tmp\tsess:1.0\n' > "$AGENT_PICKER_CACHE_DIR/picker.tsv"
+    mkdir "$AGENT_PICKER_CACHE_DIR/locks/cache.lock"
+
+    SECONDS=0
+    "$ROOT_DIR/scripts/picker.sh" >/dev/null
+    [ "$SECONDS" -lt 2 ] || fail "picker should not wait on a busy collector lock"
+}
+
 run_hook_batch() {
     local label="$1"
     local count="$2"
@@ -95,6 +108,7 @@ run_hook_batch() {
 validate_picker_scale 10
 validate_picker_scale 50
 validate_picker_scale 100
+validate_picker_busy_lock
 
 rm -rf "$AGENT_PICKER_CACHE_DIR"
 export TMUX_PANE="%1"

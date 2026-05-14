@@ -42,6 +42,20 @@ assert_eq "" "$output" "Claude resumed SessionStart hook should be output-silent
 assert_eq "null" "$(jq -r '."claude:claude-resume-1" // null' "$AGENT_PICKER_CACHE_DIR/agents.json")" "Claude resume replaces old session for same pane"
 assert_eq "%1" "$(jq -r '."claude:claude-resume-2".tmux.pane_id' "$AGENT_PICKER_CACHE_DIR/agents.json")" "Claude resume keeps pane ownership"
 
+claude_prompt_payload='{"session_id":"claude-resume-2","cwd":"/tmp/claude-repo","hook_event_name":"UserPromptSubmit","prompt":"Run tests"}'
+output=$(printf '%s' "$claude_prompt_payload" | "$ROOT_DIR/scripts/agent-hook.sh" claude UserPromptSubmit)
+
+assert_eq "" "$output" "Claude UserPromptSubmit hook should be output-silent"
+assert_eq "running" "$(jq -r '."claude:claude-resume-2".status' "$AGENT_PICKER_CACHE_DIR/agents.json")" "Claude prompt marks running"
+assert_eq "🔵 running" "$(awk -F '\t' '$1 == "claude:claude-resume-2" { print $2 }' "$AGENT_PICKER_CACHE_DIR/picker.tsv")" "Claude prompt refreshes picker row"
+
+claude_stop_payload='{"session_id":"claude-resume-2","cwd":"/tmp/claude-repo","hook_event_name":"Stop"}'
+output=$(printf '%s' "$claude_stop_payload" | "$ROOT_DIR/scripts/agent-hook.sh" claude Stop)
+
+assert_eq "" "$output" "Claude Stop hook should be output-silent"
+assert_eq "idle" "$(jq -r '."claude:claude-resume-2".status' "$AGENT_PICKER_CACHE_DIR/agents.json")" "Claude Stop marks idle"
+assert_eq "🟢 idle" "$(awk -F '\t' '$1 == "claude:claude-resume-2" { print $2 }' "$AGENT_PICKER_CACHE_DIR/picker.tsv")" "Claude Stop refreshes picker row"
+
 claude_end_payload='{"session_id":"claude-resume-2","cwd":"/tmp/claude-repo","hook_event_name":"SessionEnd","reason":"prompt_input_exit"}'
 output=$(printf '%s' "$claude_end_payload" | "$ROOT_DIR/scripts/agent-hook.sh" claude SessionEnd)
 

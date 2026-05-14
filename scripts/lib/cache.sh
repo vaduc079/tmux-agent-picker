@@ -73,6 +73,8 @@ agent_picker_atomic_write() {
 
 agent_picker_lock() {
     local name="${1:-cache}"
+    local max_attempts="${2:-100}"
+    local sleep_seconds="${3:-0.05}"
     local lock_path="$LOCK_DIR/$name.lock"
     local attempts=0
 
@@ -82,13 +84,21 @@ agent_picker_lock() {
             rmdir "$lock_path" 2>/dev/null || true
             continue
         fi
-        if [ "$attempts" -ge 100 ]; then
+        if [ "$attempts" -ge "$max_attempts" ]; then
             return 1
         fi
-        sleep 0.05
+        sleep "$sleep_seconds"
     done
 
     AGENT_PICKER_HELD_LOCK="$lock_path"
+}
+
+agent_picker_try_lock() {
+    agent_picker_lock "${1:-cache}" 0 0.05
+}
+
+agent_picker_lock_briefly() {
+    agent_picker_lock "${1:-cache}" 4 0.05
 }
 
 agent_picker_lock_is_stale() {

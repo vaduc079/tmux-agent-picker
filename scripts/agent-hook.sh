@@ -24,6 +24,8 @@ fi
 
 # shellcheck source=lib/cache.sh
 source "$LIB_DIR/cache.sh" || exit 0
+# shellcheck source=lib/picker-index.sh
+source "$LIB_DIR/picker-index.sh" || exit 0
 # shellcheck source=lib/tmux.sh
 source "$LIB_DIR/tmux.sh" || exit 0
 # shellcheck source=lib/agents/generic.sh
@@ -84,6 +86,7 @@ if [ "$UPDATE_ACTION" = "delete" ]; then
             .
           end
       ' "$AGENTS_JSON" | agent_picker_atomic_write "$AGENTS_JSON"
+    agent_picker_rebuild_picker_tsv || true
     exit 0
 fi
 
@@ -144,5 +147,7 @@ jq \
       } else ($existing.tmux // {}) end
     )
   ' "$AGENTS_JSON" | agent_picker_atomic_write "$AGENTS_JSON"
+
+agent_picker_rebuild_picker_tsv || true
 
 exit 0
