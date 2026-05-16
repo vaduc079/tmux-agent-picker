@@ -8,7 +8,8 @@ source "$ROOT_DIR/tests/test-helpers.sh"
 TMP_DIR=$(make_temp_dir)
 trap 'rm -rf "$TMP_DIR"' EXIT
 
-FAKE_BIN="$TMP_DIR/bin"
+INJECTION_MARKER="$TMP_DIR/injection-ran"
+FAKE_BIN="$TMP_DIR/bin with spaces;touch $INJECTION_MARKER"
 HOOKS_DIR="$TMP_DIR/hooks"
 TMUX_LOG="$TMP_DIR/tmux.log"
 mkdir -p "$FAKE_BIN" "$HOOKS_DIR"
@@ -58,7 +59,9 @@ chmod +x "$FAKE_BIN/fzf"
 export PATH="$FAKE_BIN:$PATH"
 export FAKE_TMUX_HOOKS_DIR="$HOOKS_DIR"
 export FAKE_TMUX_LOG="$TMUX_LOG"
-export AGENT_PICKER_CACHE_DIR="$TMP_DIR/cache"
+export AGENT_PICKER_TMUX_BIN="$FAKE_BIN/tmux"
+export AGENT_PICKER_FZF_BIN="$FAKE_BIN/fzf"
+export AGENT_PICKER_CACHE_DIR="$TMP_DIR/cache with spaces;touch $INJECTION_MARKER"
 
 "$ROOT_DIR/tmux-agent-picker.tmux"
 "$ROOT_DIR/tmux-agent-picker.tmux"
@@ -68,5 +71,8 @@ assert_eq "1" "$hook_count" "plugin reload should not duplicate collector hook"
 
 bind_count=$(grep -c '^bind-key ' "$TMUX_LOG")
 assert_eq "2" "$bind_count" "plugin reload should refresh key binding"
+
+[ ! -e "$INJECTION_MARKER" ] || fail "plugin command construction executed untrusted config"
+grep -F '\;touch\' "$TMUX_LOG" >/dev/null || fail "plugin commands should shell-escape semicolons"
 
 printf 'ok - plugin\n'

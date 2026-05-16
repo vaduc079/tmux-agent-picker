@@ -8,6 +8,18 @@ tmux_cmd() {
     "$tmux_bin" "$@"
 }
 
+shell_quote() {
+    printf '%q' "$1"
+}
+
+tmux_double_quote() {
+    local value="$1"
+
+    value=${value//\\/\\\\}
+    value=${value//\"/\\\"}
+    printf '"%s"' "$value"
+}
+
 default_picker_key="A"
 default_window_name="agent-picker"
 
@@ -40,19 +52,27 @@ else
     cache_dir="$HOME/.cache/tmux-agent-picker"
 fi
 
-tmux_cmd bind-key "$picker_key" new-window -n "$window_name" "AGENT_PICKER_TMUX_BIN=$tmux_bin AGENT_PICKER_FZF_BIN=$fzf_bin AGENT_PICKER_CACHE_DIR=$cache_dir $CURRENT_DIR/scripts/picker.sh"
+quoted_tmux_bin=$(shell_quote "$tmux_bin")
+quoted_fzf_bin=$(shell_quote "$fzf_bin")
+quoted_cache_dir=$(shell_quote "$cache_dir")
+quoted_picker_script=$(shell_quote "$CURRENT_DIR/scripts/picker.sh")
+quoted_collector_script=$(shell_quote "$CURRENT_DIR/scripts/tmux-collector.sh")
 
-collector_cmd="$CURRENT_DIR/scripts/tmux-collector.sh --once"
-collector_cmd="AGENT_PICKER_TMUX_BIN=$tmux_bin $collector_cmd"
+picker_cmd="AGENT_PICKER_TMUX_BIN=$quoted_tmux_bin AGENT_PICKER_FZF_BIN=$quoted_fzf_bin AGENT_PICKER_CACHE_DIR=$quoted_cache_dir $quoted_picker_script"
+tmux_cmd bind-key "$picker_key" new-window -n "$window_name" "$picker_cmd"
+
+collector_cmd="AGENT_PICKER_TMUX_BIN=$quoted_tmux_bin $quoted_collector_script --once"
+quoted_collector_cmd=$(tmux_double_quote "$collector_cmd")
+collector_hook_cmd="run-shell -b $quoted_collector_cmd"
 
 set_collector_hook() {
     local hook_name="$1"
 
-    if tmux_cmd show-hooks -g "$hook_name" 2>/dev/null | grep -F -- "$collector_cmd" >/dev/null 2>&1; then
+    if tmux_cmd show-hooks -g "$hook_name" 2>/dev/null | grep -F -- "$collector_hook_cmd" >/dev/null 2>&1; then
         return 0
     fi
 
-    tmux_cmd set-hook -ga "$hook_name" "run-shell -b '$collector_cmd'"
+    tmux_cmd set-hook -ga "$hook_name" "$collector_hook_cmd"
 }
 
 set_collector_hook session-created
