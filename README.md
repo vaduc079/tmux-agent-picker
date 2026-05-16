@@ -65,7 +65,7 @@ Add command hooks that call the shared dispatcher:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude SessionStart"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude SessionStart"
           }
         ]
       }
@@ -75,7 +75,7 @@ Add command hooks that call the shared dispatcher:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude UserPromptSubmit"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude UserPromptSubmit"
           }
         ]
       }
@@ -85,7 +85,7 @@ Add command hooks that call the shared dispatcher:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude PreToolUse"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude PreToolUse"
           }
         ]
       }
@@ -95,7 +95,7 @@ Add command hooks that call the shared dispatcher:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude PermissionRequest"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude PermissionRequest"
           }
         ]
       }
@@ -106,7 +106,7 @@ Add command hooks that call the shared dispatcher:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude Notification"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude Notification"
           }
         ]
       }
@@ -116,7 +116,7 @@ Add command hooks that call the shared dispatcher:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude Stop"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude Stop"
           }
         ]
       }
@@ -126,7 +126,7 @@ Add command hooks that call the shared dispatcher:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude StopFailure"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude StopFailure"
           }
         ]
       }
@@ -137,7 +137,7 @@ Add command hooks that call the shared dispatcher:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude SessionEnd"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude SessionEnd"
           }
         ]
       }
@@ -166,7 +166,7 @@ Add hooks in `~/.codex/hooks.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex SessionStart"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex SessionStart"
           }
         ]
       }
@@ -176,7 +176,7 @@ Add hooks in `~/.codex/hooks.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex UserPromptSubmit"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex UserPromptSubmit"
           }
         ]
       }
@@ -186,7 +186,7 @@ Add hooks in `~/.codex/hooks.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex PreToolUse"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex PreToolUse"
           }
         ]
       }
@@ -196,7 +196,7 @@ Add hooks in `~/.codex/hooks.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex PostToolUse"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex PostToolUse"
           }
         ]
       }
@@ -206,7 +206,7 @@ Add hooks in `~/.codex/hooks.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex PermissionRequest"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex PermissionRequest"
           }
         ]
       }
@@ -216,7 +216,7 @@ Add hooks in `~/.codex/hooks.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex Stop"
+            "command": "bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex Stop"
           }
         ]
       }

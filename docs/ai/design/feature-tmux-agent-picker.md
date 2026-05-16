@@ -258,14 +258,14 @@ Writes use a temporary file in the same directory and `mv` into place. Scripts m
 Claude hooks call:
 
 ```bash
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude SessionStart
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude UserPromptSubmit
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude PreToolUse
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude Stop
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude StopFailure
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude SessionEnd
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude PermissionRequest
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude Notification
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude SessionStart
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude UserPromptSubmit
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude PreToolUse
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude Stop
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude StopFailure
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude SessionEnd
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude PermissionRequest
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh claude Notification
 ```
 
 Claude `SessionEnd` removes the agent record. This handles shells where the tmux pane remains open after the Claude process exits.
@@ -284,12 +284,12 @@ Claude notification handling:
 Codex hooks call:
 
 ```bash
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex SessionStart
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex UserPromptSubmit
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex PreToolUse
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex PostToolUse
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex PermissionRequest
-bash ~/.config/tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex Stop
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex SessionStart
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex UserPromptSubmit
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex PreToolUse
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex PostToolUse
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex PermissionRequest
+bash ~/.tmux/plugins/tmux-agent-picker/scripts/agent-hook.sh codex Stop
 ```
 
 Codex does not currently expose a session-exit hook. The collector handles process exit cleanup by pruning Codex records when their tmux pane foreground command is a shell such as `zsh`, `bash`, or `fish`.
