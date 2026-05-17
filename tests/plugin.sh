@@ -72,6 +72,8 @@ assert_eq "1" "$hook_count" "plugin reload should not duplicate collector hook"
 bind_count=$(grep -c '^bind-key ' "$TMUX_LOG")
 assert_eq "2" "$bind_count" "plugin reload should refresh key binding"
 
+grep -F 'display-popup -E -w 50% -h 50%' "$TMUX_LOG" >/dev/null || fail "picker binding should open a tmux popup"
+! grep -F 'bind-key bind-key A new-window' "$TMUX_LOG" >/dev/null || fail "picker binding should not open a new window"
 [ ! -e "$INJECTION_MARKER" ] || fail "plugin command construction executed untrusted config"
 grep -F '\;touch\' "$TMUX_LOG" >/dev/null || fail "plugin commands should shell-escape semicolons"
 

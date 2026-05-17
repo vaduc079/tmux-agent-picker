@@ -10,11 +10,11 @@ description: Requirements for an event-driven tmux picker for Claude and Codex a
 
 Users who run multiple Claude Code and Codex CLI agents inside tmux need a fast way to see what is running, which agents need attention, and jump directly to the relevant pane.
 
-Current workflows require scanning tmux windows manually, relying on pane titles, or using broader status/sidebar tools. The first version of `tmux-agent-picker` should be a focused tmux plugin that maintains a lightweight cache of agent state and opens an `fzf` picker in a new tmux window.
+Current workflows require scanning tmux windows manually, relying on pane titles, or using broader status/sidebar tools. The first version of `tmux-agent-picker` should be a focused tmux plugin that maintains a lightweight cache of agent state and opens an `fzf` picker in a tmux popup.
 
 ## Goals & Objectives
 
-- Provide a tmux key binding that opens a new tmux window containing an `fzf` list of active agent sessions.
+- Provide a tmux key binding that opens a tmux popup containing an `fzf` list of active agent sessions.
 - Show each agent's type, cwd, tmux location, display title, and status.
 - Switch immediately to the selected agent's tmux pane.
 - Keep agent and tmux metadata up to date through hooks, not steady polling.
@@ -68,7 +68,7 @@ Event mapping:
 ## Product Decisions For V1
 
 - Default picker key: `prefix + A`, configurable through `@agent-picker-key`.
-- Picker display: new tmux window only in v1. Popup support is explicitly deferred until after the first working version.
+- Picker display: tmux popup in v1, with configurable popup width and height.
 - Display title is derived because Claude and Codex hooks do not expose a general agent session title. Title priority: tmux pane title, then tmux window name, then the first line of the most recent user prompt when available, then agent session id.
 - Cache persistence: records may remain on disk across shell invocations, but the collector must hide or remove records whose tmux pane is not live in the current tmux server, or whose Codex process has exited while the pane remains open.
 - Registration source: agent hooks are the canonical source for creating agent records. The tmux collector enriches and cleans records, and may create a temporary Codex record from live tmux pane metadata when a Codex pane is visible before its startup hook writes cache state.
@@ -78,7 +78,7 @@ Event mapping:
 
 ## Success Criteria
 
-- Installing the tmux plugin adds a configurable key binding that opens the picker in a new tmux window.
+- Installing the tmux plugin adds a configurable key binding that opens the picker in a tmux popup.
 - The picker lists Claude and Codex agents from all tmux sessions visible to the current tmux server.
 - Each row includes at least: status, agent type, cwd, tmux session/window/pane, and display title.
 - Selecting a row switches to the exact pane that owns the agent.

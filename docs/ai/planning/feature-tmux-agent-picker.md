@@ -46,9 +46,10 @@ description: Task breakdown for the first version of tmux-agent-picker
 
 - [x] Task 4.1: Implement `scripts/picker.sh` to run the collector and launch fzf.
 - [x] Task 4.2: Implement `scripts/switch-to-agent.sh` to switch tmux clients to the selected pane.
-- [x] Task 4.3: Make cancel and stale pane behavior cleanly close the picker window.
+- [x] Task 4.3: Make cancel and stale pane behavior cleanly close the picker UI.
 - [x] Task 4.4: Add empty-state behavior when no live agents are available.
-- [x] Task 4.5: Add configurable key binding and picker window name.
+- [x] Task 4.5: Add configurable key binding and picker display options.
+- [x] Task 4.6: Change picker launch to a configurable tmux popup.
 
 ### Phase 5: Tests And Validation
 

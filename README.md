@@ -2,7 +2,7 @@
 
 Event-driven tmux picker for Claude Code and Codex CLI agent panes.
 
-`tmux-agent-picker` keeps a local cache of agent status from Claude/Codex hooks and tmux pane metadata from tmux hooks. Press the picker key to open an `fzf` list in a new tmux window, choose an agent, and jump to the pane that owns it.
+`tmux-agent-picker` keeps a local cache of agent status from Claude/Codex hooks and tmux pane metadata from tmux hooks. Press the picker key to open an `fzf` list in a tmux popup, choose an agent, and jump to the pane that owns it.
 
 ## Requirements
 
@@ -48,7 +48,8 @@ Configuration:
 
 ```tmux
 set -g @agent-picker-key "A"
-set -g @agent-picker-window-name "agent-picker"
+set -g @agent-picker-popup-width "50%"
+set -g @agent-picker-popup-height "50%"
 set -g @agent-picker-cache-dir "~/.cache/tmux-agent-picker"
 ```
 

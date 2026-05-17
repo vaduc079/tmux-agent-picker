@@ -84,7 +84,7 @@ Verification performed:
 
 Design alignment summary:
 
-- Plugin entrypoint defines the picker key/window behavior and appends supported tmux structure hooks that run the collector.
+- Plugin entrypoint defines the picker key/popup behavior and appends supported tmux structure hooks that run the collector.
 - Cache primitives resolve XDG/default paths, initialize JSON/TSV files, serialize writes under a lock, and use temporary-file replacement for normal cache writes.
 - Agent hooks are output-silent in normal operation, drain stdin, parse payloads with `jq`, dispatch through Claude/Codex adapters, and upsert/delete normalized records.
 - The collector captures tmux pane metadata in one `list-panes -a` call, prunes stale panes and exited Codex processes, discovers visible Codex panes before hook registration, deduplicates same-pane records, and rebuilds live-only `picker.tsv`.

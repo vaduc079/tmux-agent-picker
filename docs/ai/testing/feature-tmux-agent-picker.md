@@ -48,7 +48,7 @@ description: Initial test strategy for tmux-agent-picker
 - [x] Configure Claude hooks and verify lifecycle transitions.
 - [x] Configure Codex hooks and verify lifecycle transitions.
 - [x] Run one Claude and one Codex agent in separate panes.
-- [x] Open picker in a new window and switch to each pane.
+- [x] Open picker in a tmux popup and switch to each pane.
 - [x] Close an agent pane and verify it disappears from the picker.
 - [x] Exit Claude with the tmux pane still open and verify the picker entry is removed through `SessionEnd`.
 - [x] Exit Codex with the tmux pane still open and verify the collector removes the picker entry.

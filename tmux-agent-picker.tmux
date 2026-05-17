@@ -21,14 +21,17 @@ tmux_double_quote() {
 }
 
 default_picker_key="A"
-default_window_name="agent-picker"
+default_popup_width="50%"
+default_popup_height="50%"
 
 picker_key=$(tmux_cmd show-option -gqv "@agent-picker-key")
-window_name=$(tmux_cmd show-option -gqv "@agent-picker-window-name")
+popup_width=$(tmux_cmd show-option -gqv "@agent-picker-popup-width")
+popup_height=$(tmux_cmd show-option -gqv "@agent-picker-popup-height")
 cache_dir="${AGENT_PICKER_CACHE_DIR:-$(tmux_cmd show-option -gqv "@agent-picker-cache-dir")}"
 
 [ -n "$picker_key" ] || picker_key="$default_picker_key"
-[ -n "$window_name" ] || window_name="$default_window_name"
+[ -n "$popup_width" ] || popup_width="$default_popup_width"
+[ -n "$popup_height" ] || popup_height="$default_popup_height"
 
 expand_path() {
     case "$1" in
@@ -59,7 +62,7 @@ quoted_picker_script=$(shell_quote "$CURRENT_DIR/scripts/picker.sh")
 quoted_collector_script=$(shell_quote "$CURRENT_DIR/scripts/tmux-collector.sh")
 
 picker_cmd="AGENT_PICKER_TMUX_BIN=$quoted_tmux_bin AGENT_PICKER_FZF_BIN=$quoted_fzf_bin AGENT_PICKER_CACHE_DIR=$quoted_cache_dir $quoted_picker_script"
-tmux_cmd bind-key "$picker_key" new-window -n "$window_name" "$picker_cmd"
+tmux_cmd bind-key "$picker_key" display-popup -E -w "$popup_width" -h "$popup_height" "$picker_cmd"
 
 collector_cmd="AGENT_PICKER_TMUX_BIN=$quoted_tmux_bin $quoted_collector_script --once"
 quoted_collector_cmd=$(tmux_double_quote "$collector_cmd")

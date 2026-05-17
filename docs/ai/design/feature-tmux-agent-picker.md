@@ -44,8 +44,9 @@ Only live agents are shown in v1. The collector removes agent records whose `tmu
 - Defines default options:
   - `@agent-picker-key`: default `A`.
   - `@agent-picker-cache-dir`: default empty, resolves to XDG cache or `~/.cache/tmux-agent-picker`.
-  - `@agent-picker-window-name`: default `agent-picker`.
-- Binds the picker key to open `scripts/picker.sh` in a new tmux window.
+  - `@agent-picker-popup-width`: default `50%`.
+  - `@agent-picker-popup-height`: default `50%`.
+- Binds the picker key to open `scripts/picker.sh` in a tmux popup.
 - Registers tmux hooks that trigger `scripts/tmux-collector.sh --once`.
 
 Initial tmux hooks:
@@ -139,9 +140,9 @@ Responsibilities:
 - Ensure cache exists.
 - Run the collector once before display to catch missed events.
 - Read `picker.tsv`.
-- Start `fzf` in the new tmux window.
+- Start `fzf` in the tmux popup.
 - Pass the selected agent id to `scripts/switch-to-agent.sh`.
-- Close the picker window after selection or cancel.
+- Close the picker popup after selection or cancel.
 - If no live agents are present, display a short empty-state message and close without mutating cache state.
 
 ### scripts/switch-to-agent.sh
@@ -311,7 +312,7 @@ The collector can also create a temporary Codex record keyed by pane id when it 
 - File-per-agent status files: simpler shell writes, but harder to keep metadata consistent and harder to render sorted picker rows.
 - Long-running daemon: better for debouncing and background indexing, but unnecessary for v1 and harder to install/debug.
 - Process polling: useful as a fallback, but hook-driven updates are more precise and cheaper.
-- tmux popup picker: ergonomic, but the stated v1 behavior is a new tmux window.
+- New tmux window picker: simpler original implementation, but less ergonomic than keeping the picker over the current workspace.
 
 ## Non-Functional Requirements
 
