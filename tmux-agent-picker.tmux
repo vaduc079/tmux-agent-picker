@@ -23,15 +23,30 @@ tmux_double_quote() {
 default_picker_key="A"
 default_popup_width="50%"
 default_popup_height="50%"
+default_status_width="12"
+default_agent_width="10"
+default_title_width="44"
+default_cwd_width="36"
+default_tmux_width="24"
 
 picker_key=$(tmux_cmd show-option -gqv "@agent-picker-key")
 popup_width=$(tmux_cmd show-option -gqv "@agent-picker-popup-width")
 popup_height=$(tmux_cmd show-option -gqv "@agent-picker-popup-height")
+status_width=$(tmux_cmd show-option -gqv "@agent-picker-status-width")
+agent_width=$(tmux_cmd show-option -gqv "@agent-picker-agent-width")
+title_width=$(tmux_cmd show-option -gqv "@agent-picker-title-width")
+cwd_width=$(tmux_cmd show-option -gqv "@agent-picker-cwd-width")
+tmux_width=$(tmux_cmd show-option -gqv "@agent-picker-tmux-width")
 cache_dir="${AGENT_PICKER_CACHE_DIR:-$(tmux_cmd show-option -gqv "@agent-picker-cache-dir")}"
 
 [ -n "$picker_key" ] || picker_key="$default_picker_key"
 [ -n "$popup_width" ] || popup_width="$default_popup_width"
 [ -n "$popup_height" ] || popup_height="$default_popup_height"
+[ -n "$status_width" ] || status_width="$default_status_width"
+[ -n "$agent_width" ] || agent_width="$default_agent_width"
+[ -n "$title_width" ] || title_width="$default_title_width"
+[ -n "$cwd_width" ] || cwd_width="$default_cwd_width"
+[ -n "$tmux_width" ] || tmux_width="$default_tmux_width"
 
 expand_path() {
     case "$1" in
@@ -58,10 +73,15 @@ fi
 quoted_tmux_bin=$(shell_quote "$tmux_bin")
 quoted_fzf_bin=$(shell_quote "$fzf_bin")
 quoted_cache_dir=$(shell_quote "$cache_dir")
+quoted_status_width=$(shell_quote "$status_width")
+quoted_agent_width=$(shell_quote "$agent_width")
+quoted_title_width=$(shell_quote "$title_width")
+quoted_cwd_width=$(shell_quote "$cwd_width")
+quoted_tmux_width=$(shell_quote "$tmux_width")
 quoted_picker_script=$(shell_quote "$CURRENT_DIR/scripts/picker.sh")
 quoted_collector_script=$(shell_quote "$CURRENT_DIR/scripts/tmux-collector.sh")
 
-picker_cmd="AGENT_PICKER_TMUX_BIN=$quoted_tmux_bin AGENT_PICKER_FZF_BIN=$quoted_fzf_bin AGENT_PICKER_CACHE_DIR=$quoted_cache_dir $quoted_picker_script"
+picker_cmd="AGENT_PICKER_TMUX_BIN=$quoted_tmux_bin AGENT_PICKER_FZF_BIN=$quoted_fzf_bin AGENT_PICKER_CACHE_DIR=$quoted_cache_dir AGENT_PICKER_STATUS_WIDTH=$quoted_status_width AGENT_PICKER_AGENT_WIDTH=$quoted_agent_width AGENT_PICKER_TITLE_WIDTH=$quoted_title_width AGENT_PICKER_CWD_WIDTH=$quoted_cwd_width AGENT_PICKER_TMUX_WIDTH=$quoted_tmux_width $quoted_picker_script"
 tmux_cmd bind-key "$picker_key" display-popup -E -w "$popup_width" -h "$popup_height" "$picker_cmd"
 
 collector_cmd="AGENT_PICKER_TMUX_BIN=$quoted_tmux_bin $quoted_collector_script --once"

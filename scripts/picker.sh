@@ -28,8 +28,42 @@ if ! command -v "$FZF_BIN" >/dev/null 2>&1; then
     exit 1
 fi
 
+agent_picker_positive_int() {
+    case "${1:-}" in
+        ""|*[!0-9]*)
+            return 1
+            ;;
+    esac
+
+    [ "$1" -gt 0 ]
+}
+
+agent_picker_column_width() {
+    local value="${1:-}"
+    local default_value="$2"
+
+    if agent_picker_positive_int "$value"; then
+        printf '%s\n' "$value"
+        return 0
+    fi
+
+    printf '%s\n' "$default_value"
+}
+
+STATUS_WIDTH=$(agent_picker_column_width "${AGENT_PICKER_STATUS_WIDTH:-}" 12)
+AGENT_WIDTH=$(agent_picker_column_width "${AGENT_PICKER_AGENT_WIDTH:-}" 10)
+TITLE_WIDTH=$(agent_picker_column_width "${AGENT_PICKER_TITLE_WIDTH:-}" 44)
+CWD_WIDTH=$(agent_picker_column_width "${AGENT_PICKER_CWD_WIDTH:-}" 36)
+TMUX_WIDTH=$(agent_picker_column_width "${AGENT_PICKER_TMUX_WIDTH:-}" 24)
+
 agent_picker_format_rows() {
-    awk -F '\t' '
+    awk \
+      -v status_width="$STATUS_WIDTH" \
+      -v agent_width="$AGENT_WIDTH" \
+      -v title_width="$TITLE_WIDTH" \
+      -v cwd_width="$CWD_WIDTH" \
+      -v tmux_width="$TMUX_WIDTH" \
+      -F '\t' '
         function clean(value) {
             gsub(/[[:cntrl:]]/, " ", value)
             return value
@@ -80,12 +114,6 @@ agent_picker_format_rows() {
         }
 
         BEGIN {
-            status_width = 12
-            agent_width = 10
-            title_width = 44
-            cwd_width = 36
-            tmux_width = 24
-
             print_row("", "status", "agent", "title", "cwd", "tmux")
         }
 

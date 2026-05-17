@@ -99,4 +99,20 @@ assert_column_aligned "second row" "$second_display" "title" "Summarize JD"
 assert_column_aligned "second row" "$second_display" "cwd" ".../codebases/challenge"
 assert_column_aligned "second row" "$second_display" "tmux" "duc-vu:1.1"
 
+export AGENT_PICKER_TITLE_WIDTH=16
+export AGENT_PICKER_CWD_WIDTH=18
+
+"$ROOT_DIR/scripts/picker.sh" >/dev/null
+
+first_row=$(sed -n '2p' "$FZF_INPUT")
+first_display="${first_row#*$'\t'}"
+
+case "$first_display" in
+    *"Check workspa..."*".../personal/tm..."*)
+        ;;
+    *)
+        fail "custom picker widths should clip title and cwd: $first_display"
+        ;;
+esac
+
 printf 'ok - picker\n'
