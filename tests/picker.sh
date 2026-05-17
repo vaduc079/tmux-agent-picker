@@ -51,6 +51,7 @@ export FAKE_FZF_INPUT="$FZF_INPUT"
 export AGENT_PICKER_TMUX_BIN="$FAKE_BIN/tmux"
 export AGENT_PICKER_FZF_BIN="$FAKE_BIN/fzf"
 export AGENT_PICKER_CACHE_DIR="$TMP_DIR/cache"
+export AGENT_PICKER_WINDOW_WIDTH=120
 
 "$ROOT_DIR/scripts/picker.sh" >/dev/null
 
@@ -70,6 +71,17 @@ visible_column() {
         BEGIN {
             gsub(/🟢|🔵|🟡|🔴|⚪/, "xx", line)
             print index(line, needle)
+        }
+    '
+}
+
+display_width() {
+    local line="$1"
+
+    awk -v line="$line" '
+        BEGIN {
+            gsub(/🟢|🔵|🟡|🔴|⚪/, "xx", line)
+            print length(line)
         }
     '
 }
@@ -114,5 +126,23 @@ case "$first_display" in
         fail "custom picker widths should clip title and cwd: $first_display"
         ;;
 esac
+
+unset AGENT_PICKER_TITLE_WIDTH
+unset AGENT_PICKER_CWD_WIDTH
+unset AGENT_PICKER_TMUX_WIDTH
+export AGENT_PICKER_WINDOW_WIDTH=60
+
+"$ROOT_DIR/scripts/picker.sh" >/dev/null
+
+first_row=$(sed -n '2p' "$FZF_INPUT")
+second_row=$(sed -n '3p' "$FZF_INPUT")
+first_display="${first_row#*$'\t'}"
+second_display="${second_row#*$'\t'}"
+
+first_width=$(display_width "$first_display")
+second_width=$(display_width "$second_display")
+
+[ "$first_width" -le 60 ] || fail "first row should fit dynamic window width: $first_width"
+[ "$second_width" -le 60 ] || fail "second row should fit dynamic window width: $second_width"
 
 printf 'ok - picker\n'

@@ -48,9 +48,9 @@ Only live agents are shown in v1. The collector removes agent records whose `tmu
   - `@agent-picker-popup-height`: default `50%`.
   - `@agent-picker-status-width`: default `12`.
   - `@agent-picker-agent-width`: default `10`.
-  - `@agent-picker-title-width`: default `44`.
-  - `@agent-picker-cwd-width`: default `36`.
-  - `@agent-picker-tmux-width`: default `24`.
+  - `@agent-picker-title-width`: default `auto`; positive integers cap the dynamic title column.
+  - `@agent-picker-cwd-width`: default `auto`; positive integers cap the dynamic cwd column.
+  - `@agent-picker-tmux-width`: default `auto`; positive integers cap the dynamic tmux column.
 - Binds the picker key to open `scripts/picker.sh` in a tmux popup.
 - Registers tmux hooks that trigger `scripts/tmux-collector.sh --once`.
 
@@ -146,6 +146,7 @@ Responsibilities:
 - Run the collector once before display to catch missed events.
 - Read `picker.tsv`.
 - Start `fzf` in the tmux popup.
+- Render `picker.tsv` with fixed `status` and `agent` columns, then size `title`, `cwd`, and `tmux` from the longest visible values while keeping the total visible row width within the current popup/window width.
 - Pass the selected agent id to `scripts/switch-to-agent.sh`.
 - Close the picker popup after selection or cancel.
 - If no live agents are present, display a short empty-state message and close without mutating cache state.
@@ -239,7 +240,7 @@ Stored in `picker.tsv`:
 <agent_id>\t<status_label>\t<agent_type>\t<display_title>\t<compact_cwd>\t<session:window.pane>
 ```
 
-The rendered `fzf` line hides the first field and displays `status agent title cwd tmux`. Status labels include emoji for quick scanning, such as `🟢 idle`, `🔵 running`, `🟡 wait`, and `🔴 error`. The cwd display is compacted to the last two path components for deep paths, for example `.../personal/tmux-agent-picker`. Display column widths are configurable through tmux options and equivalent `AGENT_PICKER_*_WIDTH` environment variables for direct script use.
+The rendered `fzf` line hides the first field and displays `status agent title cwd tmux`. Status labels include emoji for quick scanning, such as `🟢 idle`, `🔵 running`, `🟡 wait`, and `🔴 error`. The cwd display is compacted to the last two path components for deep paths, for example `.../personal/tmux-agent-picker`. The `status` and `agent` columns are fixed-width. The `title`, `cwd`, and `tmux` columns are measured from the current rows and shrunk when needed so the visible row fits the current popup/window width. Positive numeric `@agent-picker-title-width`, `@agent-picker-cwd-width`, and `@agent-picker-tmux-width` values are treated as per-column maximums; `auto` leaves them governed by row content and the total row cap.
 
 Keeping TSV as a derived cache avoids expensive JSON processing during every picker redraw.
 

@@ -9,6 +9,7 @@ description: Initial implementation notes for tmux-agent-picker
 ## Development Setup
 
 - Worktree: `.worktrees/feature-tmux-agent-picker`.
+- Current dynamic-column update is intentionally being made in the main workspace without a worktree per user request.
 - Required local tools: Bash, tmux, fzf, jq.
 - No package manager is currently present in the repo, so dependency bootstrap is skipped until a manifest is added.
 
@@ -46,6 +47,7 @@ tests/
 - Keep canonical cache state in JSON and derive picker TSV.
 - Treat `agents.json` and `picker.tsv` as live indexes. The collector should remove agents whose owning tmux pane no longer exists in the latest snapshot.
 - Render picker columns as `status agent title cwd tmux`, using emoji status labels and a compact cwd that shows only the last two path components for deep paths.
+- Keep `status` and `agent` fixed-width. Measure `title`, `cwd`, and `tmux` from the current picker rows, then shrink those dynamic columns as needed so the visible row fits the current popup/window width. Positive numeric dynamic width options act as per-column maximums.
 - Remove Claude records on `SessionEnd` so exited Claude processes disappear even when the tmux pane stays open.
 - Remove Codex records when the collector sees that the owning pane foreground command has returned to a shell.
 - Allow the collector to create temporary `codex:<pane-id>` records for live Codex panes before the first Codex hook event creates a session-id record.

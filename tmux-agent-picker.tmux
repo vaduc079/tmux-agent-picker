@@ -25,9 +25,9 @@ default_popup_width="50%"
 default_popup_height="50%"
 default_status_width="12"
 default_agent_width="10"
-default_title_width="44"
-default_cwd_width="36"
-default_tmux_width="24"
+default_title_width="auto"
+default_cwd_width="auto"
+default_tmux_width="auto"
 
 picker_key=$(tmux_cmd show-option -gqv "@agent-picker-key")
 popup_width=$(tmux_cmd show-option -gqv "@agent-picker-popup-width")

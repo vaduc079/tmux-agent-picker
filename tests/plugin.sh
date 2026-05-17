@@ -73,8 +73,9 @@ bind_count=$(grep -c '^bind-key ' "$TMUX_LOG")
 assert_eq "2" "$bind_count" "plugin reload should refresh key binding"
 
 grep -F 'display-popup -E -w 50% -h 50%' "$TMUX_LOG" >/dev/null || fail "picker binding should open a tmux popup"
-grep -F 'AGENT_PICKER_TITLE_WIDTH=44' "$TMUX_LOG" >/dev/null || fail "picker binding should pass default title width"
-grep -F 'AGENT_PICKER_CWD_WIDTH=36' "$TMUX_LOG" >/dev/null || fail "picker binding should pass default cwd width"
+grep -F 'AGENT_PICKER_TITLE_WIDTH=auto' "$TMUX_LOG" >/dev/null || fail "picker binding should pass default title width"
+grep -F 'AGENT_PICKER_CWD_WIDTH=auto' "$TMUX_LOG" >/dev/null || fail "picker binding should pass default cwd width"
+grep -F 'AGENT_PICKER_TMUX_WIDTH=auto' "$TMUX_LOG" >/dev/null || fail "picker binding should pass default tmux width"
 ! grep -F 'bind-key bind-key A new-window' "$TMUX_LOG" >/dev/null || fail "picker binding should not open a new window"
 [ ! -e "$INJECTION_MARKER" ] || fail "plugin command construction executed untrusted config"
 grep -F '\;touch\' "$TMUX_LOG" >/dev/null || fail "plugin commands should shell-escape semicolons"

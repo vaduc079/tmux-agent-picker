@@ -50,19 +50,57 @@ agent_picker_column_width() {
     printf '%s\n' "$default_value"
 }
 
+agent_picker_optional_column_width() {
+    local value="${1:-}"
+
+    if agent_picker_positive_int "$value"; then
+        printf '%s\n' "$value"
+        return 0
+    fi
+
+    printf '0\n'
+}
+
+agent_picker_window_width() {
+    local width="${AGENT_PICKER_WINDOW_WIDTH:-}"
+
+    if agent_picker_positive_int "$width"; then
+        printf '%s\n' "$width"
+        return 0
+    fi
+
+    if command -v tput >/dev/null 2>&1; then
+        width=$(tput cols 2>/dev/null || true)
+        if agent_picker_positive_int "$width"; then
+            printf '%s\n' "$width"
+            return 0
+        fi
+    fi
+
+    width=$(agent_picker_tmux_cmd display-message -p '#{window_width}' 2>/dev/null || true)
+    if agent_picker_positive_int "$width"; then
+        printf '%s\n' "$width"
+        return 0
+    fi
+
+    printf '120\n'
+}
+
 STATUS_WIDTH=$(agent_picker_column_width "${AGENT_PICKER_STATUS_WIDTH:-}" 12)
 AGENT_WIDTH=$(agent_picker_column_width "${AGENT_PICKER_AGENT_WIDTH:-}" 10)
-TITLE_WIDTH=$(agent_picker_column_width "${AGENT_PICKER_TITLE_WIDTH:-}" 44)
-CWD_WIDTH=$(agent_picker_column_width "${AGENT_PICKER_CWD_WIDTH:-}" 36)
-TMUX_WIDTH=$(agent_picker_column_width "${AGENT_PICKER_TMUX_WIDTH:-}" 24)
+TITLE_MAX_WIDTH=$(agent_picker_optional_column_width "${AGENT_PICKER_TITLE_WIDTH:-}")
+CWD_MAX_WIDTH=$(agent_picker_optional_column_width "${AGENT_PICKER_CWD_WIDTH:-}")
+TMUX_MAX_WIDTH=$(agent_picker_optional_column_width "${AGENT_PICKER_TMUX_WIDTH:-}")
+WINDOW_WIDTH=$(agent_picker_window_width)
 
 agent_picker_format_rows() {
     awk \
       -v status_width="$STATUS_WIDTH" \
       -v agent_width="$AGENT_WIDTH" \
-      -v title_width="$TITLE_WIDTH" \
-      -v cwd_width="$CWD_WIDTH" \
-      -v tmux_width="$TMUX_WIDTH" \
+      -v title_max_width="$TITLE_MAX_WIDTH" \
+      -v cwd_max_width="$CWD_MAX_WIDTH" \
+      -v tmux_max_width="$TMUX_MAX_WIDTH" \
+      -v window_width="$WINDOW_WIDTH" \
       -F '\t' '
         function clean(value) {
             gsub(/[[:cntrl:]]/, " ", value)
@@ -92,6 +130,18 @@ agent_picker_format_rows() {
             return length(visible)
         }
 
+        function max_value(current, candidate) {
+            return candidate > current ? candidate : current
+        }
+
+        function cap_width(width, max_width) {
+            if (max_width > 0 && width > max_width) {
+                return max_width
+            }
+
+            return width
+        }
+
         function format_cell(value, width, padding) {
             value = clip_cell(value, width)
             padding = width - terminal_width(value)
@@ -103,22 +153,82 @@ agent_picker_format_rows() {
             return value
         }
 
-        function print_row(id, status, agent, title, cwd, tmux) {
+        function store_row(id_value, status_value, agent_value, title_value, cwd_value, tmux_value) {
+            row_count += 1
+            ids[row_count] = id_value
+            statuses[row_count] = status_value
+            agents[row_count] = agent_value
+            titles[row_count] = title_value
+            cwds[row_count] = cwd_value
+            tmuxes[row_count] = tmux_value
+
+            title_width = max_value(title_width, terminal_width(title_value))
+            cwd_width = max_value(cwd_width, terminal_width(cwd_value))
+            tmux_width = max_value(tmux_width, terminal_width(tmux_value))
+        }
+
+        function shrink_dynamic_columns(available_width, min_title_width, min_cwd_width, min_tmux_width, current_total) {
+            current_total = title_width + cwd_width + tmux_width
+
+            while (current_total > available_width) {
+                if (title_width >= cwd_width && title_width >= tmux_width && title_width > min_title_width) {
+                    title_width -= 1
+                } else if (cwd_width >= tmux_width && cwd_width > min_cwd_width) {
+                    cwd_width -= 1
+                } else if (tmux_width > min_tmux_width) {
+                    tmux_width -= 1
+                } else if (title_width > 1) {
+                    title_width -= 1
+                } else if (cwd_width > 1) {
+                    cwd_width -= 1
+                } else if (tmux_width > 1) {
+                    tmux_width -= 1
+                } else {
+                    return
+                }
+
+                current_total = title_width + cwd_width + tmux_width
+            }
+        }
+
+        function print_row(row_number) {
             printf "%s\t%s  %s  %s  %s  %s\n",
-                id,
-                format_cell(status, status_width),
-                format_cell(agent, agent_width),
-                format_cell(title, title_width),
-                format_cell(cwd, cwd_width),
-                clip_cell(tmux, tmux_width)
+                ids[row_number],
+                format_cell(statuses[row_number], status_width),
+                format_cell(agents[row_number], agent_width),
+                format_cell(titles[row_number], title_width),
+                format_cell(cwds[row_number], cwd_width),
+                clip_cell(tmuxes[row_number], tmux_width)
         }
 
         BEGIN {
-            print_row("", "status", "agent", "title", "cwd", "tmux")
+            separator_width = 8
+            store_row("", "status", "agent", "title", "cwd", "tmux")
         }
 
         NF >= 6 {
-            print_row($1, $2, $3, $4, $5, $6)
+            store_row($1, $2, $3, $4, $5, $6)
+        }
+
+        END {
+            title_width = cap_width(title_width, title_max_width)
+            cwd_width = cap_width(cwd_width, cwd_max_width)
+            tmux_width = cap_width(tmux_width, tmux_max_width)
+
+            dynamic_width = window_width - status_width - agent_width - separator_width
+            if (dynamic_width < 3) {
+                dynamic_width = 3
+            }
+
+            min_title_width = title_width < 12 ? title_width : 12
+            min_cwd_width = cwd_width < 10 ? cwd_width : 10
+            min_tmux_width = tmux_width < 8 ? tmux_width : 8
+
+            shrink_dynamic_columns(dynamic_width, min_title_width, min_cwd_width, min_tmux_width)
+
+            for (row_index = 1; row_index <= row_count; row_index += 1) {
+                print_row(row_index)
+            }
         }
     '
 }

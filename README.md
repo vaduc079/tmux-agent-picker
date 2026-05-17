@@ -52,11 +52,13 @@ set -g @agent-picker-popup-width "50%"
 set -g @agent-picker-popup-height "50%"
 set -g @agent-picker-status-width "12"
 set -g @agent-picker-agent-width "10"
-set -g @agent-picker-title-width "44"
-set -g @agent-picker-cwd-width "36"
-set -g @agent-picker-tmux-width "24"
+set -g @agent-picker-title-width "auto"
+set -g @agent-picker-cwd-width "auto"
+set -g @agent-picker-tmux-width "auto"
 set -g @agent-picker-cache-dir "~/.cache/tmux-agent-picker"
 ```
+
+`status` and `agent` use fixed widths. `title`, `cwd`, and `tmux` default to dynamic widths based on the longest visible value in the current picker rows, capped so the rendered row fits the current popup/window width. Set any dynamic column option to a positive integer to use that value as a per-column maximum.
 
 ## Claude Code Hooks
 

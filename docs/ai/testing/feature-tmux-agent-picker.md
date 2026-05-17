@@ -39,6 +39,7 @@ description: Initial test strategy for tmux-agent-picker
 - [x] Collector discovers live Codex panes before the first prompt is sent.
 - [x] Agent hook writes cache records from hook payloads.
 - [x] Picker row generation includes status, agent type, cwd, tmux location, and title.
+- [x] Picker row formatting keeps fixed status/agent columns aligned and caps dynamic title/cwd/tmux columns to the current window width.
 - [x] Switch script targets the selected pane with stable tmux ids.
 - [x] Real tmux server smoke test with live panes.
 

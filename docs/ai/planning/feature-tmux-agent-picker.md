@@ -50,6 +50,7 @@ description: Task breakdown for the first version of tmux-agent-picker
 - [x] Task 4.4: Add empty-state behavior when no live agents are available.
 - [x] Task 4.5: Add configurable key binding and picker display options.
 - [x] Task 4.6: Change picker launch to a configurable tmux popup.
+- [x] Task 4.7: Size `title`, `cwd`, and `tmux` dynamically while keeping `status` and `agent` fixed.
 
 ### Phase 5: Tests And Validation
 
@@ -88,7 +89,7 @@ Total initial estimate: 3.5-4 days.
 
 ## Progress Summary
 
-Phase 4 implementation and Phase 5 validation are complete for the first plugin slice. The plugin now includes cache helpers, tmux collector, agent hook dispatcher/adapters, fzf picker, pane switching, plugin entrypoint, README setup docs, and automated shell tests. Live smoke testing covered Claude and Codex registration, resume behavior, picker visibility, process exit cleanup, and pane cleanup. Follow-up issues found during smoke testing were fixed: promptless hook payloads no longer abort registration, Claude `SessionEnd` removes records when the pane remains open, same-pane resume flows deduplicate old records, Codex process exit is detected from tmux foreground command changes, and live Codex panes can be discovered before the first prompt.
+Phase 4 implementation and Phase 5 validation are complete for the first plugin slice. The plugin now includes cache helpers, tmux collector, agent hook dispatcher/adapters, fzf picker, pane switching, plugin entrypoint, README setup docs, and automated shell tests. Live smoke testing covered Claude and Codex registration, resume behavior, picker visibility, process exit cleanup, and pane cleanup. Follow-up issues found during smoke testing were fixed: promptless hook payloads no longer abort registration, Claude `SessionEnd` removes records when the pane remains open, same-pane resume flows deduplicate old records, Codex process exit is detected from tmux foreground command changes, live Codex panes can be discovered before the first prompt, and dynamic picker columns now fit variable row content within the current popup/window width.
 
 ## Remaining Work
 
