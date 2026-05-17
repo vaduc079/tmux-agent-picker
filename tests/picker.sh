@@ -24,7 +24,14 @@ case "$1" in
         exit 0
         ;;
     display-message)
-        printf '%%1\n'
+        case "$*" in
+            *'#{window_width}'*)
+                printf '132\n'
+                ;;
+            *)
+                printf '%%1\n'
+                ;;
+        esac
         exit 0
         ;;
     switch-client|select-window|select-pane)
@@ -45,6 +52,18 @@ printf '%s\n' "$input" > "$FAKE_FZF_INPUT"
 printf '%s\n' "$input" | sed -n '2p'
 FAKE_FZF
 chmod +x "$FAKE_BIN/fzf"
+
+cat > "$FAKE_BIN/tput" <<'FAKE_TPUT'
+#!/usr/bin/env bash
+case "$1" in
+    cols)
+        printf '60\n'
+        exit 0
+        ;;
+esac
+exit 1
+FAKE_TPUT
+chmod +x "$FAKE_BIN/tput"
 
 export PATH="$FAKE_BIN:$PATH"
 export FAKE_FZF_INPUT="$FZF_INPUT"
@@ -144,5 +163,16 @@ second_width=$(display_width "$second_display")
 
 [ "$first_width" -le 60 ] || fail "first row should fit dynamic window width: $first_width"
 [ "$second_width" -le 60 ] || fail "second row should fit dynamic window width: $second_width"
+
+unset AGENT_PICKER_WINDOW_WIDTH
+
+"$ROOT_DIR/scripts/picker.sh" >/dev/null
+
+first_row=$(sed -n '2p' "$FZF_INPUT")
+first_display="${first_row#*$'\t'}"
+first_width=$(display_width "$first_display")
+
+[ "$first_width" -gt 60 ] || fail "picker should prefer tmux window width over stale tput width: $first_width"
+[ "$first_width" -le 132 ] || fail "picker should cap tmux-sized row to tmux width: $first_width"
 
 printf 'ok - picker\n'

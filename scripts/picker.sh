@@ -50,7 +50,7 @@ agent_picker_column_width() {
     printf '%s\n' "$default_value"
 }
 
-agent_picker_optional_column_width() {
+agent_picker_column_max_width() {
     local value="${1:-}"
 
     if agent_picker_positive_int "$value"; then
@@ -61,6 +61,39 @@ agent_picker_optional_column_width() {
     printf '0\n'
 }
 
+agent_picker_tty_width() {
+    local tty_size=""
+    local width=""
+
+    tty -s || return 1
+
+    tty_size=$(stty size </dev/tty 2>/dev/null || true)
+    width="${tty_size##* }"
+    agent_picker_positive_int "$width" || return 1
+
+    printf '%s\n' "$width"
+}
+
+agent_picker_tmux_window_width() {
+    local width=""
+
+    width=$(agent_picker_tmux_cmd display-message -p '#{window_width}' 2>/dev/null || true)
+    agent_picker_positive_int "$width" || return 1
+
+    printf '%s\n' "$width"
+}
+
+agent_picker_tput_width() {
+    local width=""
+
+    command -v tput >/dev/null 2>&1 || return 1
+
+    width=$(tput cols 2>/dev/null || true)
+    agent_picker_positive_int "$width" || return 1
+
+    printf '%s\n' "$width"
+}
+
 agent_picker_window_width() {
     local width="${AGENT_PICKER_WINDOW_WIDTH:-}"
 
@@ -69,16 +102,17 @@ agent_picker_window_width() {
         return 0
     fi
 
-    if command -v tput >/dev/null 2>&1; then
-        width=$(tput cols 2>/dev/null || true)
-        if agent_picker_positive_int "$width"; then
-            printf '%s\n' "$width"
-            return 0
-        fi
+    if width=$(agent_picker_tty_width); then
+        printf '%s\n' "$width"
+        return 0
     fi
 
-    width=$(agent_picker_tmux_cmd display-message -p '#{window_width}' 2>/dev/null || true)
-    if agent_picker_positive_int "$width"; then
+    if width=$(agent_picker_tmux_window_width); then
+        printf '%s\n' "$width"
+        return 0
+    fi
+
+    if width=$(agent_picker_tput_width); then
         printf '%s\n' "$width"
         return 0
     fi
@@ -88,9 +122,9 @@ agent_picker_window_width() {
 
 STATUS_WIDTH=$(agent_picker_column_width "${AGENT_PICKER_STATUS_WIDTH:-}" 12)
 AGENT_WIDTH=$(agent_picker_column_width "${AGENT_PICKER_AGENT_WIDTH:-}" 10)
-TITLE_MAX_WIDTH=$(agent_picker_optional_column_width "${AGENT_PICKER_TITLE_WIDTH:-}")
-CWD_MAX_WIDTH=$(agent_picker_optional_column_width "${AGENT_PICKER_CWD_WIDTH:-}")
-TMUX_MAX_WIDTH=$(agent_picker_optional_column_width "${AGENT_PICKER_TMUX_WIDTH:-}")
+TITLE_MAX_WIDTH=$(agent_picker_column_max_width "${AGENT_PICKER_TITLE_WIDTH:-}")
+CWD_MAX_WIDTH=$(agent_picker_column_max_width "${AGENT_PICKER_CWD_WIDTH:-}")
+TMUX_MAX_WIDTH=$(agent_picker_column_max_width "${AGENT_PICKER_TMUX_WIDTH:-}")
 WINDOW_WIDTH=$(agent_picker_window_width)
 
 agent_picker_format_rows() {
@@ -134,6 +168,10 @@ agent_picker_format_rows() {
             return candidate > current ? candidate : current
         }
 
+        function min_value(current, candidate) {
+            return candidate < current ? candidate : current
+        }
+
         function cap_width(width, max_width) {
             if (max_width > 0 && width > max_width) {
                 return max_width
@@ -167,28 +205,46 @@ agent_picker_format_rows() {
             tmux_width = max_value(tmux_width, terminal_width(tmux_value))
         }
 
-        function shrink_dynamic_columns(available_width, min_title_width, min_cwd_width, min_tmux_width, current_total) {
-            current_total = title_width + cwd_width + tmux_width
+        function fit_tiny_columns(available_width, first_width, second_width) {
+            first_width = int(available_width / 3)
+            second_width = int(available_width / 3)
 
-            while (current_total > available_width) {
-                if (title_width >= cwd_width && title_width >= tmux_width && title_width > min_title_width) {
-                    title_width -= 1
-                } else if (cwd_width >= tmux_width && cwd_width > min_cwd_width) {
-                    cwd_width -= 1
-                } else if (tmux_width > min_tmux_width) {
-                    tmux_width -= 1
-                } else if (title_width > 1) {
-                    title_width -= 1
-                } else if (cwd_width > 1) {
-                    cwd_width -= 1
-                } else if (tmux_width > 1) {
-                    tmux_width -= 1
-                } else {
-                    return
-                }
+            title_width = first_width
+            cwd_width = second_width
+            tmux_width = available_width - first_width - second_width
+        }
 
-                current_total = title_width + cwd_width + tmux_width
+        function fit_dynamic_columns(available_width, min_title_width, min_cwd_width, min_tmux_width, natural_total, min_total, remaining_width, title_extra, cwd_extra, tmux_extra, total_extra, assigned_title_extra, assigned_cwd_extra) {
+            natural_total = title_width + cwd_width + tmux_width
+            if (natural_total <= available_width) {
+                return
             }
+
+            min_total = min_title_width + min_cwd_width + min_tmux_width
+            if (min_total > available_width) {
+                fit_tiny_columns(available_width)
+                return
+            }
+
+            remaining_width = available_width - min_total
+            title_extra = title_width - min_title_width
+            cwd_extra = cwd_width - min_cwd_width
+            tmux_extra = tmux_width - min_tmux_width
+            total_extra = title_extra + cwd_extra + tmux_extra
+
+            if (total_extra <= 0) {
+                title_width = min_title_width
+                cwd_width = min_cwd_width
+                tmux_width = min_tmux_width
+                return
+            }
+
+            assigned_title_extra = int(remaining_width * title_extra / total_extra)
+            assigned_cwd_extra = int(remaining_width * cwd_extra / total_extra)
+
+            title_width = min_title_width + assigned_title_extra
+            cwd_width = min_cwd_width + assigned_cwd_extra
+            tmux_width = min_tmux_width + remaining_width - assigned_title_extra - assigned_cwd_extra
         }
 
         function print_row(row_number) {
@@ -220,11 +276,11 @@ agent_picker_format_rows() {
                 dynamic_width = 3
             }
 
-            min_title_width = title_width < 12 ? title_width : 12
-            min_cwd_width = cwd_width < 10 ? cwd_width : 10
-            min_tmux_width = tmux_width < 8 ? tmux_width : 8
+            min_title_width = min_value(title_width, 12)
+            min_cwd_width = min_value(cwd_width, 10)
+            min_tmux_width = min_value(tmux_width, 8)
 
-            shrink_dynamic_columns(dynamic_width, min_title_width, min_cwd_width, min_tmux_width)
+            fit_dynamic_columns(dynamic_width, min_title_width, min_cwd_width, min_tmux_width)
 
             for (row_index = 1; row_index <= row_count; row_index += 1) {
                 print_row(row_index)
