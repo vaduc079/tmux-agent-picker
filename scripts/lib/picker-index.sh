@@ -13,6 +13,14 @@ agent_picker_rebuild_picker_tsv() {
         else "⚪ " + $status
         end;
 
+      def status_rank($status):
+        if $status == "running" then 0
+        elif $status == "idle" then 1
+        elif $status == "wait" then 2
+        elif $status == "error" then 3
+        else 4
+        end;
+
       def compact_cwd($cwd):
         ($cwd // "") as $path |
         if $path == "" then
@@ -26,7 +34,14 @@ agent_picker_rebuild_picker_tsv() {
           end
         end;
 
-      to_entries[]
+      to_entries
+      | sort_by([
+          status_rank(.value.status // "idle"),
+          (.value.agent_type // "agent"),
+          (.value.display_title // .value.display_title_hint // .value.agent_session_id // .value.id),
+          .key
+        ])
+      | .[]
       | select(.value.stale != true)
       | .value as $agent
       | ($agent.status // "idle") as $status
