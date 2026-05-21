@@ -10,6 +10,7 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 
 FAKE_BIN="$TMP_DIR/bin"
 FZF_INPUT="$TMP_DIR/fzf-input.tsv"
+FZF_ARGS="$TMP_DIR/fzf-args.txt"
 mkdir -p "$FAKE_BIN"
 
 cat > "$FAKE_BIN/tmux" <<'FAKE_TMUX'
@@ -47,6 +48,7 @@ chmod +x "$FAKE_BIN/tmux"
 
 cat > "$FAKE_BIN/fzf" <<'FAKE_FZF'
 #!/usr/bin/env bash
+printf '%s\n' "$@" > "$FAKE_FZF_ARGS"
 input=$(cat)
 printf '%s\n' "$input" > "$FAKE_FZF_INPUT"
 printf '%s\n' "$input" | sed -n '2p'
@@ -67,12 +69,15 @@ chmod +x "$FAKE_BIN/tput"
 
 export PATH="$FAKE_BIN:$PATH"
 export FAKE_FZF_INPUT="$FZF_INPUT"
+export FAKE_FZF_ARGS="$FZF_ARGS"
 export AGENT_PICKER_TMUX_BIN="$FAKE_BIN/tmux"
 export AGENT_PICKER_FZF_BIN="$FAKE_BIN/fzf"
 export AGENT_PICKER_CACHE_DIR="$TMP_DIR/cache"
 export AGENT_PICKER_WINDOW_WIDTH=120
 
 "$ROOT_DIR/scripts/picker.sh" >/dev/null
+
+grep -qx -- "--no-sort" "$FZF_ARGS" || fail "picker should preserve pre-sorted picker.tsv order in fzf"
 
 header=$(sed -n '1p' "$FZF_INPUT")
 first_row=$(sed -n '2p' "$FZF_INPUT")

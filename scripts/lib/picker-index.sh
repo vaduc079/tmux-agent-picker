@@ -14,10 +14,10 @@ agent_picker_rebuild_picker_tsv() {
         end;
 
       def status_rank($status):
-        if $status == "running" then 0
-        elif $status == "idle" then 1
-        elif $status == "wait" then 2
-        elif $status == "error" then 3
+        if $status == "error" then 0
+        elif $status == "wait" then 1
+        elif $status == "idle" then 2
+        elif $status == "running" then 3
         else 4
         end;
 

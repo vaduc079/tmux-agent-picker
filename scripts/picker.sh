@@ -6,8 +6,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # shellcheck source=lib/cache.sh
 source "$SCRIPT_DIR/lib/cache.sh"
+# shellcheck source=lib/picker-index.sh
+source "$SCRIPT_DIR/lib/picker-index.sh"
 
 agent_picker_init_cache
+
+if jq -e 'length > 0' "$AGENTS_JSON" >/dev/null 2>&1; then
+    agent_picker_rebuild_picker_tsv
+fi
 
 if [ ! -s "$PICKER_TSV" ]; then
     # Hooks keep picker.tsv fresh; the collector is only a cold-cache fallback here.
@@ -295,6 +301,7 @@ SELECTION=$(
       --delimiter=$'\t' \
       --with-nth=2 \
       --header-lines=1 \
+      --no-sort \
       --prompt='agent> ' \
 ) || exit 0
 

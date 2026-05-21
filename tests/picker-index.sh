@@ -87,8 +87,8 @@ JSON
 agent_picker_rebuild_picker_tsv
 
 actual_order=$(awk -F '\t' '{ print $1 }' "$PICKER_TSV")
-expected_order=$'claude:running\ncodex:running\nclaude:idle\ncodex:idle\ncodex:wait'
+expected_order=$'codex:wait\nclaude:idle\ncodex:idle\nclaude:running\ncodex:running'
 
-assert_eq "$expected_order" "$actual_order" "picker index sorts rows by status rank then agent type"
+assert_eq "$expected_order" "$actual_order" "picker index sorts rows by reversed status rank then agent type"
 
 printf 'ok - picker index\n'
